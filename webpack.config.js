@@ -1,33 +1,51 @@
 const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const ESLintPlugin = require('eslint-webpack-plugin');
+const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
 module.exports = {
-  entry: './src/index.js',
+  entry: './src/index.ts',
   output: {
-    filename: 'bundle.[contenthash].js',
+    filename: 'bundle.js',
     path: path.resolve(__dirname, 'dist'),
-    clean: true, // очищає dist перед кожною збіркою
+    clean: true
+  },
+  devtool: 'source-map',
+  devServer: {
+    static: './dist',
+    open: true,
+    hot: true
+  },
+  resolve: {
+    extensions: ['.ts', '.js']
   },
   module: {
     rules: [
       {
-        test: /\.css$/i,
-        use: [MiniCssExtractPlugin.loader, 'css-loader'],
+        test: /\.ts$/,
+        use: 'ts-loader',
+        exclude: /node_modules/
       },
       {
-        test: /\.(png|jpe?g|gif|svg|woff2?)$/i,
-        type: 'asset/resource',
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: 'babel-loader'
       },
-    ],
+      {
+        test: /\.scss$/,
+        use: ['style-loader', 'css-loader', 'sass-loader']
+      },
+      {
+        test: /\.less$/,
+        use: ['style-loader', 'css-loader', 'less-loader']
+      },
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader']
+      }
+    ]
   },
   plugins: [
-    new HtmlWebpackPlugin({
-      template: 'index.html',
-    }),
-    new MiniCssExtractPlugin({
-      filename: 'styles.[contenthash].css',
-    }),
-  ],
-  mode: 'production',
+    new ESLintPlugin({ extensions: ['js', 'ts'] }),
+    new BundleAnalyzerPlugin({ analyzerMode: 'disabled', generateStatsFile: true }) // Змінити `analyzerMode: 'server'` для запуску
+  ]
 };
